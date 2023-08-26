@@ -1,0 +1,110 @@
+import * as express from 'express';
+import { Request, Response, NextFunction } from 'express';
+const mongoose= require("mongoose");
+
+const app= express();
+const port= 3000;
+
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+import { MongoClient } from "mongodb";
+const uri = "mongodb://localHOST:27017/Credentials";
+const client = new MongoClient(uri);
+
+mongoose.connect("mongodb://localHOST:27017/Credentials",{
+     useNewUrlParser : true,
+     useUnifiedTopology: true
+})
+
+const loginSchema={
+    username: String,
+    password: String
+}
+
+const newLogin= mongoose.model("newLogin", loginSchema);
+
+app.use(express.static(__dirname + '/public'));
+
+/*app.get('/', (req:Request, res:Response)=>{
+  res.send(`
+  <html>
+    <head>
+      <title>Login</title>
+    </head>
+    <body>
+      <div class="login-container">
+        <h1>LogIn Page</h1>
+        <form method="POST" action="/signup">
+          <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
+    </body>
+  </html>
+`);
+});*/
+
+app.get('/', (req:Request, res:Response)=>{
+  res.send(`
+  <html>
+    <head>
+      <title>Login</title>
+    </head>
+    <body>
+      <div class="login-container">
+        <h1>LogIn Page</h1>
+        <form method="POST" action="/login">
+          <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <button type="submit">Log In</button>
+        </form>
+      </div>
+    </body>
+  </html>
+`);
+});
+
+/*app.post('/signup',(req:Request, res: Response)=>{
+  console.log(req.body.email);
+    const newUser = new newLogin({
+          username : req.body.username,
+          password : req.body.password
+    });
+    newUser.save().then(()=>{
+        res.json("secrets");
+    }).catch((err:any)=>{
+      console.log(err);
+    })
+});*/
+
+app.post('/login',async (req:Request, res:Response)=>{
+     const {username, password} = req.body;
+     console.log(username);
+     console.log(password);
+     const database = client.db("Credentials");
+     const info = database.collection("newLogin");
+
+     const user= await info.find({
+      "$or":[
+        {"username": {$regex: username}}
+      ]
+     });
+
+})
+
+app.listen(port, ()=>{
+  console.log(`App started on port ${port}`);
+})  
